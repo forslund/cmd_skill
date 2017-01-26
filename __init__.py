@@ -53,11 +53,14 @@ class CmdSkill(MycroftSkill):
         script = message.data.get('Script')
         script = self.alias.get(script, script)
         args = script.split(' ')
-        if self.uid and self.gid:
-            p = subprocess.Popen(args, preexec_fn=set_user(self.uid, self.gid))
-        else:
-            p = subprocess.Popen(args)
-
+        try:
+            if self.uid and self.gid:
+                p = subprocess.Popen(args,
+                                     preexec_fn=set_user(self.uid, self.gid))
+            else:
+                p = subprocess.Popen(args)
+        except:
+            logger.debug('Could not run script ' + script, exc_info=True)
 
 def create_skill():
     return CmdSkill()
