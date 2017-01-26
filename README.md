@@ -16,7 +16,7 @@ The skill can be configured to run scripts from easily pronouncable human uttera
 ```json
   "CmdSkill": {
       "alias": {
-        "generate report": "/home/forslund/scripts/generate_report.sh",
+        "generate report": "/home/forslund/scripts/generate_report.sh"
       }
   }
 ```
