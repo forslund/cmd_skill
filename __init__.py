@@ -47,7 +47,7 @@ class CmdSkill(MycroftSkill):
                  .build()
         self.register_intent(intent, self.run)
 
-        self.emitter.on('CmdSkillRun', self.run)
+        self.bus.on('CmdSkillRun', self.run)
     
     def run(self, message):
         script = message.data.get('Script')
@@ -61,6 +61,7 @@ class CmdSkill(MycroftSkill):
                 p = subprocess.Popen(args)
         except:
             logger.debug('Could not run script ' + script, exc_info=True)
+
 
 def create_skill():
     return CmdSkill()
