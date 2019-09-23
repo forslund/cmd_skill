@@ -1,29 +1,17 @@
-import sys
-from os.path import dirname, abspath, basename
-import subprocess
-
-from mycroft.skills.core import MycroftSkill
-from adapt.intent import IntentBuilder
-from mycroft.messagebus.message import Message
-
-
-import time
-from time import mktime
-
 from pwd import getpwnam
 import os
-from os.path import dirname
-from mycroft.util.log import getLogger
+import subprocess
 
-sys.path.append(abspath(dirname(__file__)))
+from mycroft.util.log import LOG
+from mycroft.skills.core import MycroftSkill
+from adapt.intent import IntentBuilder
 
-logger = getLogger(abspath(__file__).split('/')[-2])
-__author__ = 'forslund'
 
 def set_user(uid, gid):
-    logger.info('Setting group and user to ' + str(gid) + ':' + str(uid))
+    LOG.info('Setting group and user to ' + str(gid) + ':' + str(uid))
     os.setgid(gid)
     os.setuid(uid)
+
 
 class CmdSkill(MycroftSkill):
     def __init__(self):
@@ -31,24 +19,30 @@ class CmdSkill(MycroftSkill):
         self.uid = None
         self.gid = None
         self.alias = {}
-        if self.config:
-            user = self.config.get('user')
-            if user:
-                pwnam = getpwnam(user)
-                self.uid = pwnam.pw_uid
-                self.gid = pwnam.pw_gid
-            self.alias = self.config.get('alias', {})
+
+    def get_config(self, key):
+        print(self.settings)
+        return (self.settings.get(key) or
+                self.config_core.get('CmdSkill', {}).get(key))
 
     def initialize(self):
-        self.load_data_files(dirname(__file__))
+        user = self.get_config('user')
+        if user:
+            pwnam = getpwnam(user)
+            self.uid = pwnam.pw_uid
+            self.gid = pwnam.pw_gid
+        self.alias = self.get_config('alias') or {}
+
+        for alias in self.alias:
+            print("adding {}".format("alias"))
+            self.register_vocabulary(alias, 'Script')
 
         intent = IntentBuilder('RunScriptCommandIntent')\
-                 .require('Script')\
-                 .build()
+            .require('Script').require('Run').build()
         self.register_intent(intent, self.run)
 
         self.bus.on('CmdSkillRun', self.run)
-    
+
     def run(self, message):
         script = message.data.get('Script')
         script = self.alias.get(script, script)
@@ -60,7 +54,7 @@ class CmdSkill(MycroftSkill):
             else:
                 p = subprocess.Popen(args)
         except:
-            logger.debug('Could not run script ' + script, exc_info=True)
+            self.log.debug('Could not run script ' + script, exc_info=True)
 
 
 def create_skill():
