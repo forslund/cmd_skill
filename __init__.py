@@ -49,8 +49,8 @@ class CmdSkill(MycroftSkill):
         args = script.split(' ')
         try:
             if self.uid and self.gid:
-                p = subprocess.Popen(args,
-                                     preexec_fn=set_user(self.uid, self.gid))
+                subprocess.Popen(args,
+                                 preexec_fn=set_user(self.uid, self.gid))
             else:
                 self.log.info('Running {}'.format(args))
                 subprocess.Popen(args)
