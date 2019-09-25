@@ -8,7 +8,7 @@ from adapt.intent import IntentBuilder
 
 
 def set_user(uid, gid):
-    LOG.info('Setting group and user to ' + str(gid) + ':' + str(uid))
+    LOG.info('Setting group and user to {}:{}'.format(gid, uid))
     os.setgid(gid)
     os.setuid(uid)
 
@@ -21,7 +21,7 @@ class CmdSkill(MycroftSkill):
         self.alias = {}
 
     def get_config(self, key):
-        print(self.settings)
+        self.log.debug(self.settings)
         return (self.settings.get(key) or
                 self.config_core.get('CmdSkill', {}).get(key))
 
@@ -34,7 +34,7 @@ class CmdSkill(MycroftSkill):
         self.alias = self.get_config('alias') or {}
 
         for alias in self.alias:
-            print("adding {}".format("alias"))
+            self.log.info("Adding {}".format(alias))
             self.register_vocabulary(alias, 'Script')
 
         intent = IntentBuilder('RunScriptCommandIntent')\
@@ -52,8 +52,9 @@ class CmdSkill(MycroftSkill):
                 p = subprocess.Popen(args,
                                      preexec_fn=set_user(self.uid, self.gid))
             else:
-                p = subprocess.Popen(args)
-        except:
+                self.log.info('Running {}'.format(args))
+                subprocess.Popen(args)
+        except Exception:
             self.log.debug('Could not run script ' + script, exc_info=True)
 
 
